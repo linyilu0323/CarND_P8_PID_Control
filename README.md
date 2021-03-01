@@ -1,98 +1,75 @@
-# CarND-Controls-PID
-Self-Driving Car Engineer Nanodegree Program
+# Path Planning Project
 
----
+### Project Description
 
-## Dependencies
+>  In this project, your goal is to design a path planner that is able to create smooth, safe paths for the car to follow along a 3 lane highway with traffic. A successful path planner will be able to keep inside its lane, avoid hitting other cars, and pass slower moving traffic all by using localization, sensor fusion, and map data.
 
-* cmake >= 3.5
- * All OSes: [click here for installation instructions](https://cmake.org/install/)
-* make >= 4.1(mac, linux), 3.81(Windows)
-  * Linux: make is installed by default on most Linux distros
-  * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
-  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
-* gcc/g++ >= 5.4
-  * Linux: gcc / g++ is installed by default on most Linux distros
-  * Mac: same deal as make - [install Xcode command line tools]((https://developer.apple.com/xcode/features/)
-  * Windows: recommend using [MinGW](http://www.mingw.org/)
-* [uWebSockets](https://github.com/uWebSockets/uWebSockets)
-  * Run either `./install-mac.sh` or `./install-ubuntu.sh`.
-  * If you install from source, checkout to commit `e94b6e1`, i.e.
-    ```
-    git clone https://github.com/uWebSockets/uWebSockets 
-    cd uWebSockets
-    git checkout e94b6e1
-    ```
-    Some function signatures have changed in v0.14.x. See [this PR](https://github.com/udacity/CarND-MPC-Project/pull/3) for more details.
-* Simulator. You can download these from the [project intro page](https://github.com/udacity/self-driving-car-sim/releases) in the classroom.
+See full description for the project in [here](https://github.com/linyilu0323/CarND_P7_PathPlanning/blob/master/Project_Instructions.md).
 
-Fellow students have put together a guide to Windows set-up for the project [here](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/files/Kidnapped_Vehicle_Windows_Setup.pdf) if the environment you have set up for the Sensor Fusion projects does not work for this project. There's also an experimental patch for windows in this [PR](https://github.com/udacity/CarND-PID-Control-Project/pull/3).
+------
 
-## Basic Build Instructions
+### Introduction
 
-1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./pid`. 
+In this project, what you're provided:
 
-Tips for setting up your environment can be found [here](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/23d376c7-0195-4276-bdf0-e02f1f3c665d)
+- Road map: a list of waypoint data `[x, y, s, dx, dy]` containing each point's global map "x-y" position, Frenet coordinate "s" position, and the Frenet "d" unit vector (points perpendicular to the road in the right hand side direction).
+- Main car's localization data: contains `x, y, s, d, yaw, speed` information of the main car.
+- Sensor fusion data: contains all the information about the cars on the right-hand side of the road, the format for each car is: `[id, x, y, vx, vy, s, d]`.
+- Previous path data given to the planner.
 
-## Editor Settings
+It is desired to generate a pair of `[x, y]` coordinates for the car to follow every 20ms.
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+### Implementation Details
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+**1. PID Control Concept**
 
-## Code Style
+   - Proportional Gain: control effort is proportional to the error. - A single P controller would usually result in "overshoot" and subsequent oscillation.
+   - Integral Gain: control effort is proportional to the integral of error over time. - Often helpful when there is an intrinsic system error that is beyond controller.
+   - Differential Gain: control effor is proportional to the derivative of error. - Reduces oscillation but response is slower.
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+**2. Implementation**
 
-## Project Instructions and Rubric
+I started to tune the PID controller by using a constant throttle (0.5), and observe the vehicle driving with different control parameter tunings.
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+- P-Gain only: 
 
-More information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/e8235395-22dd-4b87-88e0-d108c5e5bbf4/concepts/6a4d8d42-6a04-4aa6-b284-1697c0fd6562)
-for instructions and the project rubric.
+  | P Gain Value | Result                                                       |
+  | ------------ | ------------------------------------------------------------ |
+  | 3            | ![P_3_only](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_3_only.gif) |
+  | 0.3          | <img src="/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_03_only.gif" alt="P_03_only" style="zoom:50%;" /> |
+  | 0.003        | ![P_0003_only](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_0003_only.gif) |
 
-## Hints!
+  From above experiment, the larger the P gain, the faster system responds to the error, but also the larger the oscillation. None of the above case would finish one loop without crash. However, it seems a P-gain of around 0.3 is suitable as a starting point.
 
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
+- Adding D-Gain:
 
-## Call for IDE Profiles Pull Requests
+  Continuing by adding other terms, I skipped the I gain because I don't think there is systematic error with the simulator. I again tested 3 cases with a constant P gain of 0.3.
 
-Help your fellow students!
+  | D Gain Value | Result                                                       |
+  | ------------ | ------------------------------------------------------------ |
+  | 0.3          | ![P_03_D_03](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_03_D_03.gif) |
+  | 10           | ![P_03_D10](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_03_D10.gif) |
+  | 100          | ![P_03_D100](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_03_D100.gif) |
 
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to we ensure
-that students don't feel pressured to use one IDE or another.
+  A large D gain (Kd = 100) seem to keep the vehicle in the middle of the lane but the residue oscillation seems annoying, the magnitude is small but I think the constant high frequency oscillation would make passenger feel worse. A small D gain (Kd = 0.3) is probably too ineffective, it doesn't help to reduce and control the maginitude of oscillation.
 
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
+- Fine Tune
 
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
+  I tried to use a "manual" twiddle process to tune PID controller with P and D components only, I ended up choosing Kp = 0.3 and Kd = 8. The vehicle was able to drive a full loop without falling out.
 
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
+#### **A self check against the rubrics:**
 
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
+:white_check_mark: The PID procedure follows what was taught in the lessons.
 
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
+:white_check_mark: Describe the effect each of the P, I, D components had in your implementation.  *- you're reading this*
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+:white_check_mark: Describe how the final hyperparameters were chosen. 
+
+:white_check_mark: The vehicle must successfully drive a lap around the track.
+
+
+### Future Improvements
+
+- Implement twiddle algorithm: Run a complete loop with different PID gain tuning and use twiddle algorithm to fine tune the gains would be an interesting project. 
+- Add a PID controller for throttle control: If adding another PID controller to the throttle, we may be able to achieve a faster speed.
 

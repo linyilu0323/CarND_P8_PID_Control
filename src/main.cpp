@@ -33,12 +33,13 @@ string hasData(string s) {
 int main() {
   uWS::Hub h;
 
-  PID pid;
-  /**
-   * TODO: Initialize the pid variable.
-   */
+  // initialize PID controllers
+  PID pid_st;
+  pid_st.Init(0.3, 0.000, 8.0);
 
-  h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, 
+  int iterations = 0;
+
+  h.onMessage([&pid_st, &iterations](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -57,20 +58,41 @@ int main() {
           double speed = std::stod(j[1]["speed"].get<string>());
           double angle = std::stod(j[1]["steering_angle"].get<string>());
           double steer_value;
-          /**
-           * TODO: Calculate steering value here, remember the steering value is
-           *   [-1, 1].
-           * NOTE: Feel free to play around with the throttle and speed.
-           *   Maybe use another PID controller to control the speed!
-           */
-          
+          // double throttle_value;
+
+          pid_st.UpdateError(cte);
+          steer_value = - pid_st.Kp * pid_st.p_error
+                        - pid_st.Kd * pid_st.d_error
+                        - pid_st.Ki * pid_st.i_error;
+
+          /*
+          // Twiddle - optimize the parameters
+          int settle_iterations = 100;
+          double twiddle_tol = 0.05;
+          iterations += 1;
+
+          if (accumulate(pid_st.delta_gain.begin(), pid_st.delta_gain.end(), 0) < twiddle_tol){
+              std::cout << "Optimizing Steering PID Controller..." << std::endl;
+              std::cout << "Iteration: " << iterations << std::endl;
+
+              // run twiddle after a minimum amount of iterations to let it stabilize
+              if (iterations > settle_iterations){
+                  pid_st.Twiddle();
+                  iterations = 0;
+              }
+          }
+          else {
+              std::cout << "PID Controller is tuned!" << std::endl;
+          }
+          */
+
           // DEBUG
-          std::cout << "CTE: " << cte << " Steering Value: " << steer_value 
-                    << std::endl;
+          // std::cout << "CTE: " << cte << " Steering Value: " << steer_value
+          //        << std::endl;
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
-          msgJson["throttle"] = 0.3;
+          msgJson["throttle"] = 0.5;
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
           std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
@@ -87,7 +109,7 @@ int main() {
     std::cout << "Connected!!!" << std::endl;
   });
 
-  h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code, 
+  h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code,
                          char *message, size_t length) {
     ws.close();
     std::cout << "Disconnected" << std::endl;
@@ -100,6 +122,6 @@ int main() {
     std::cerr << "Failed to listen to port" << std::endl;
     return -1;
   }
-  
+
   h.run();
 }
