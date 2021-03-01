@@ -35,9 +35,9 @@ I started to tune the PID controller by using a constant throttle (0.5), and obs
 
   | P Gain Value | Result                                                       |
   | ------------ | ------------------------------------------------------------ |
-  | 3            | ![P_3_only](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_3_only.gif) |
-  | 0.3          | <img src="/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_03_only.gif" alt="P_03_only" style="zoom:50%;" /> |
-  | 0.003        | ![P_0003_only](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_0003_only.gif) |
+  | 3            | ![P_3_only](./img/P_3_only.gif)                              |
+  | 0.3          | <img src="./img/P_03_only.gif" alt="P_03_only" style="zoom:50%;" /> |
+  | 0.003        | ![P_0003_only](./img/P_0003_only.gif) |
 
   From above experiment, the larger the P gain, the faster system responds to the error, but also the larger the oscillation. None of the above case would finish one loop without crash. However, it seems a P-gain of around 0.3 is suitable as a starting point.
 
@@ -47,9 +47,9 @@ I started to tune the PID controller by using a constant throttle (0.5), and obs
 
   | D Gain Value | Result                                                       |
   | ------------ | ------------------------------------------------------------ |
-  | 0.3          | ![P_03_D_03](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_03_D_03.gif) |
-  | 10           | ![P_03_D10](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_03_D10.gif) |
-  | 100          | ![P_03_D100](/Users/linyilv/Documents/SDCND/CarND-P8-PIDControl/img/P_03_D100.gif) |
+  | 0.3          | ![P_03_D_03](./img/P_03_D_03.gif) |
+  | 10           | ![P_03_D10](./img/P_03_D10.gif) |
+  | 100          | ![P_03_D100](./img/P_03_D100.gif) |
 
   A large D gain (Kd = 100) seem to keep the vehicle in the middle of the lane but the residue oscillation seems annoying, the magnitude is small but I think the constant high frequency oscillation would make passenger feel worse. A small D gain (Kd = 0.3) is probably too ineffective, it doesn't help to reduce and control the maginitude of oscillation.
 
