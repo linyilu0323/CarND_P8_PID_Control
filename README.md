@@ -1,24 +1,3 @@
-# Path Planning Project
-
-### Project Description
-
->  In this project, your goal is to design a path planner that is able to create smooth, safe paths for the car to follow along a 3 lane highway with traffic. A successful path planner will be able to keep inside its lane, avoid hitting other cars, and pass slower moving traffic all by using localization, sensor fusion, and map data.
-
-See full description for the project in [here](https://github.com/linyilu0323/CarND_P7_PathPlanning/blob/master/Project_Instructions.md).
-
-------
-
-### Introduction
-
-In this project, what you're provided:
-
-- Road map: a list of waypoint data `[x, y, s, dx, dy]` containing each point's global map "x-y" position, Frenet coordinate "s" position, and the Frenet "d" unit vector (points perpendicular to the road in the right hand side direction).
-- Main car's localization data: contains `x, y, s, d, yaw, speed` information of the main car.
-- Sensor fusion data: contains all the information about the cars on the right-hand side of the road, the format for each car is: `[id, x, y, vx, vy, s, d]`.
-- Previous path data given to the planner.
-
-It is desired to generate a pair of `[x, y]` coordinates for the car to follow every 20ms.
-
 ### Implementation Details
 
 **1. PID Control Concept**
